@@ -34,8 +34,7 @@ public class SberGame extends ApplicationAdapter {
 
     public static final int SCREEN_WIDTH = 640;
     public static final int SCREEN_HEIGHT = 480;
-//    public static final float CLOCK_POINT_SECONDS_DEFAULT = 32.0f;
-    public static final float CLOCK_POINT_SECONDS_DEFAULT = 1;
+    public static final float CLOCK_POINT_SECONDS_DEFAULT = 32.0f;
 
     SpriteBatch batch;
     Hero hero;

@@ -17,8 +17,13 @@ import com.sapfil.sbergame.devopsIcons.DevOpsHolder;
 import com.sapfil.sbergame.devopsIcons.PromHolder;
 import com.sapfil.sbergame.devopsIcons.TimeHolder;
 import com.sapfil.sbergame.drops.Drop;
+import com.sapfil.sbergame.screens.Screen;
 
 public class SberGame extends ApplicationAdapter {
+
+    private enum State{
+        START, GAME, LOSE, WIN
+    }
 
     public static Engine engine;
 
@@ -29,7 +34,8 @@ public class SberGame extends ApplicationAdapter {
 
     public static final int SCREEN_WIDTH = 640;
     public static final int SCREEN_HEIGHT = 480;
-    public static final float CLOCK_POINT_SECONDS_DEFAULT = 32.0f;
+//    public static final float CLOCK_POINT_SECONDS_DEFAULT = 32.0f;
+    public static final float CLOCK_POINT_SECONDS_DEFAULT = 1;
 
     SpriteBatch batch;
     Hero hero;
@@ -54,25 +60,61 @@ public class SberGame extends ApplicationAdapter {
     float dropPeriod = DROP_PREIOD_DEFAULT;
     float clockTime = CLOCK_POINT_SECONDS_DEFAULT;
 
+    Screen startScreen;
+    Screen winScreen;
+    Screen loseScreen;
+
+    State state;
+
     @Override
     public void create() {
-        batch = new SpriteBatch();
-        engine = new Engine();
-        hero = new Hero();
+            engine = new Engine();
+            batch = new SpriteBatch();
 
-        redHolder = new DevOpsHolder("devops-red.png", 0);
-        yellowHolder = new DevOpsHolder("devops-yellow.png", 5);
-        greenHolder = new DevOpsHolder("devops-green.png", 4);
-        blueHolder = new DevOpsHolder("devops-blue.png", 3);
-        cyanHolder = new DevOpsHolder("devops-cyan.png", 2);
-        purpleHolder = new DevOpsHolder("devops-purple.png", 1);
+            startScreen = new Screen("Start-screen.png");
+            winScreen = new Screen("win-screen.png");
+            loseScreen = new Screen("lose-screen.jpg");
+            initState(State.START);
+    }
 
-        promHolder = new PromHolder();
-        timeHolder = new TimeHolder();
+    private void initState(State state){
 
-        currentHolder = greenHolder;
+        this.state = state;
 
-        engine.addEntity(hero);
+        engine.removeAllEntities();
+        switch (state){
+            case START:{
+                engine.addEntity(startScreen);
+                break;
+            }
+            case GAME: {
+                hero = new Hero();
+
+                redHolder = new DevOpsHolder("devops-red.png", 0);
+                yellowHolder = new DevOpsHolder("devops-yellow.png", 5);
+                greenHolder = new DevOpsHolder("devops-green.png", 4);
+                blueHolder = new DevOpsHolder("devops-blue.png", 3);
+                cyanHolder = new DevOpsHolder("devops-cyan.png", 2);
+                purpleHolder = new DevOpsHolder("devops-purple.png", 1);
+
+                promHolder = new PromHolder();
+                timeHolder = new TimeHolder();
+
+                currentHolder = greenHolder;
+
+                engine.addEntity(hero);
+                break;
+            }
+            case LOSE:{
+                engine.addEntity(loseScreen);
+                break;
+            }
+            case WIN:{
+                engine.addEntity(winScreen);
+                break;
+            }
+
+        }
     }
 
     @Override
@@ -100,66 +142,81 @@ public class SberGame extends ApplicationAdapter {
 
     private void update(float dt) {
 
-        PositionComponent heroPosition = Mappers.positionMapper.get(hero);
+        switch (state) {
+            case GAME: {
 
-        timeCounter += dt;
+                PositionComponent heroPosition = Mappers.positionMapper.get(hero);
 
-        if (timeCounter > clockTime){
-            timeCounter = 0;
-            timePointGot();
-        }
+                timeCounter += dt;
 
-        dropCounter += dt;
-
-        if (dropCounter >= dropPeriod){
-            dropCounter = 0;
-            int nextDrop =  levelMap[(int)(Math.random() * difficulty)];
-
-            engine.addEntity(new Drop(
-                    (float)(Math.random() * SCREEN_WIDTH),
-                    SCREEN_HEIGHT,
-                    0,
-                    (float)(Math.random() / 2 * dropSpeed + dropSpeed),
-                    nextDrop
-                    )
-            );
-        }
-
-        for (Entity entity : engine.getEntitiesFor(dropFamily)) {
-            PositionComponent positionComponent = Mappers.positionMapper.get(entity);
-            DropComponent dropComponent = Mappers.dropMapper.get(entity);
-            if (dropComponent.update(dt,
-                    positionComponent,
-                    Mappers.velocityXYMapper.get(entity)
-                    ) != 0){
-                engine.removeEntity(entity);
-            } else {
-                if (positionComponent.getY() < DROP_CATCH_HEIGHT && Math.abs(positionComponent.getX() - heroPosition.getX()) < DROP_CATCH_WIDTH){
-                    updateDevOpsIcon(dropComponent.getType());
-                    engine.removeEntity(entity);
+                if (timeCounter > clockTime) {
+                    timeCounter = 0;
+                    timePointGot();
                 }
+
+                dropCounter += dt;
+
+                if (dropCounter >= dropPeriod) {
+                    dropCounter = 0;
+                    int nextDrop = levelMap[(int) (Math.random() * difficulty)];
+
+                    engine.addEntity(new Drop(
+                                    (float) (Math.random() * SCREEN_WIDTH),
+                                    SCREEN_HEIGHT,
+                                    0,
+                                    (float) (Math.random() / 2 * dropSpeed + dropSpeed),
+                                    nextDrop
+                            )
+                    );
+                }
+
+                for (Entity entity : engine.getEntitiesFor(dropFamily)) {
+                    PositionComponent positionComponent = Mappers.positionMapper.get(entity);
+                    DropComponent dropComponent = Mappers.dropMapper.get(entity);
+                    if (dropComponent.update(dt,
+                            positionComponent,
+                            Mappers.velocityXYMapper.get(entity)
+                    ) != 0) {
+                        engine.removeEntity(entity);
+                    } else {
+                        if (positionComponent.getY() < DROP_CATCH_HEIGHT && Math.abs(positionComponent.getX() - heroPosition.getX()) < DROP_CATCH_WIDTH) {
+                            updateDevOpsIcon(dropComponent.getType());
+                            engine.removeEntity(entity);
+                        }
+                    }
+                }
+
+                if (isKeyPressed()) {
+
+                    switch (getKeyPressed()) {
+                        case Input.Keys.LEFT: {
+                            heroPosition.setX(heroPosition.getX() - Hero.SPEED * dt);
+                            if (heroPosition.getX() < 40) {
+                                heroPosition.setX(40);
+                            }
+                            break;
+                        }
+                        case Input.Keys.RIGHT: {
+                            heroPosition.setX(heroPosition.getX() + Hero.SPEED * dt);
+                            if (heroPosition.getX() > SCREEN_WIDTH - 40) {
+                                heroPosition.setX(SCREEN_WIDTH - 40);
+                            }
+                            break;
+                        }
+
+                        default: {
+                        }
+                    }
+                }
+                break;
             }
-        }
-
-        if (isKeyPressed()) {
-
-            switch (getKeyPressed()) {
-                case Input.Keys.LEFT: {
-                    heroPosition.setX(heroPosition.getX() - Hero.SPEED * dt);
-                    if (heroPosition.getX() < 40){
-                        heroPosition.setX(40);
-                    }
-                    break;
+            case WIN:
+            case LOSE:
+            case START:{
+                if (Gdx.input.isKeyPressed(Input.Keys.ENTER)){
+                    initState(State.GAME);
                 }
-                case Input.Keys.RIGHT: {
-                    heroPosition.setX(heroPosition.getX() + Hero.SPEED * dt);
-                    if (heroPosition.getX() > SCREEN_WIDTH - 40){
-                        heroPosition.setX(SCREEN_WIDTH - 40);
-                    }
-                    break;
-                }
-
-                default: {}
+                break;
             }
         }
 
@@ -231,11 +288,11 @@ public class SberGame extends ApplicationAdapter {
     }
 
     private void looseGame(){
-
+        initState(State.LOSE);
     }
 
     private void winGame(){
-
+        initState(State.WIN);
     }
 
     private boolean isKeyPressed() {

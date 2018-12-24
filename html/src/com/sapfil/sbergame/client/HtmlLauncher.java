@@ -27,7 +27,7 @@ public class HtmlLauncher extends GwtApplication {
         //     Window.enableScrolling(false);
         //     Window.setMargin("0");
         //     Window.addResizeHandler(new ResizeListener());
-        //     cfg.preferFlash = false;
+        //     cfg.preferFlash = false;git remote add origin https://github.com/Sapfil2/SberGame.git
         //     return cfg;
         // }
         //

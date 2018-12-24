@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "944524978793",
+    "firebase_url": "https://sbergame-b3b35.firebaseio.com",
+    "project_id": "sbergame-b3b35",
+    "storage_bucket": "sbergame-b3b35.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:944524978793:android:020361ab6b2a9ede",
+        "android_client_info": {
+          "package_name": "com.sapfil.sbergame"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "944524978793-bu2e9f0mnmq59vm6efscdod1uh64aofv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRa03CrROz6TWty9pEN1c3sPzDT1DHpNY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

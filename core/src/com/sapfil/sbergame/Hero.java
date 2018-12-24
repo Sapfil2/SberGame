@@ -15,12 +15,21 @@ public class Hero extends Entity {
     public final static float SPEED = 1000;
 
     public Hero(){
-        this.add(new PositionComponent(40,40));
+        this.add(new PositionComponent(40,60));
         this.add(new VelocityComponent());
         this.add(new KeyboardCtrlComponent());
         Array<TextureRegion> array = new Array<>();
-        array.add(new TextureRegion(new Texture("hero-fur.png")));
+        array.add(new TextureRegion(new Texture("hero-ninja.png")));
 
-        this.add(new GfxComponent(0, array, Animation.PlayMode.NORMAL));
+        this.add( new GfxComponent(0, array, Animation.PlayMode.NORMAL));
     }
+
+    public void wearHat(){
+        remove(GfxComponent.class);
+        Array<TextureRegion> array = new Array<>();
+        array.add(new TextureRegion(new Texture("hero-santa.png")));
+
+        this.add( new GfxComponent(0, array, Animation.PlayMode.NORMAL));
+    }
+
 }

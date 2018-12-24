@@ -66,7 +66,6 @@ public class DevOpsHolder {
     private int coins;
     private List<Entity> list = new LinkedList<>();
 
-
     public int addCoin() {
         Entity entity = new Entity();
 
@@ -115,8 +114,7 @@ public class DevOpsHolder {
             }
             case 8:
                 cancel();
-                coins = 0;
-                break;
+                return -1;
         }
 
         list.add(entity);

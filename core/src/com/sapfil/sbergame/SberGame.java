@@ -14,24 +14,29 @@ import com.sapfil.sbergame.ashley.components.GfxComponent;
 import com.sapfil.sbergame.ashley.components.PositionComponent;
 import com.sapfil.sbergame.ashley.mappers.Mappers;
 import com.sapfil.sbergame.devopsIcons.DevOpsHolder;
+import com.sapfil.sbergame.devopsIcons.PromHolder;
+import com.sapfil.sbergame.devopsIcons.TimeHolder;
 import com.sapfil.sbergame.drops.Drop;
 
 public class SberGame extends ApplicationAdapter {
 
     public static Engine engine;
 
-    public static final float DROP_PREIOD = 1.0f;
-    public static final float DROP_SPEED = -100.0f;
+    public static final float DROP_PREIOD_DEFAULT = 0.5f;
+    public static final float DROP_SPEED_DEFAULT = -100.0f;
     public static final float DROP_CATCH_HEIGHT = 80;
     public static final float DROP_CATCH_WIDTH = 40;
 
     public static final int SCREEN_WIDTH = 640;
     public static final int SCREEN_HEIGHT = 480;
+    public static final float CLOCK_POINT_SECONDS_DEFAULT = 32.0f;
 
     SpriteBatch batch;
     Hero hero;
 
     DevOpsHolder redHolder, yellowHolder, greenHolder, blueHolder, cyanHolder, purpleHolder, currentHolder;
+    PromHolder promHolder;
+    TimeHolder timeHolder;
 
     Family gfxActiveFamily = Family.all(GfxComponent.class, PositionComponent.class)
             .exclude(BackComponent.class)
@@ -41,7 +46,13 @@ public class SberGame extends ApplicationAdapter {
 
     Family dropFamily = Family.all(DropComponent.class, PositionComponent.class).get();
 
-    float dropCounter = 0.0f;
+    float dropCounter = 0.0f, timeCounter = 0.0f;
+
+    int[] levelMap = {0,4,2,5,3,1,0};
+    int difficulty = 3;
+    float dropSpeed = DROP_SPEED_DEFAULT;
+    float dropPeriod = DROP_PREIOD_DEFAULT;
+    float clockTime = CLOCK_POINT_SECONDS_DEFAULT;
 
     @Override
     public void create() {
@@ -55,6 +66,9 @@ public class SberGame extends ApplicationAdapter {
         blueHolder = new DevOpsHolder("devops-blue.png", 3);
         cyanHolder = new DevOpsHolder("devops-cyan.png", 2);
         purpleHolder = new DevOpsHolder("devops-purple.png", 1);
+
+        promHolder = new PromHolder();
+        timeHolder = new TimeHolder();
 
         currentHolder = greenHolder;
 
@@ -88,16 +102,25 @@ public class SberGame extends ApplicationAdapter {
 
         PositionComponent heroPosition = Mappers.positionMapper.get(hero);
 
+        timeCounter += dt;
+
+        if (timeCounter > clockTime){
+            timeCounter = 0;
+            timePointGot();
+        }
+
         dropCounter += dt;
 
-        if (dropCounter >= DROP_PREIOD){
+        if (dropCounter >= dropPeriod){
             dropCounter = 0;
+            int nextDrop =  levelMap[(int)(Math.random() * difficulty)];
+
             engine.addEntity(new Drop(
-                    (float)(Math.random() * SCREEN_HEIGHT),
+                    (float)(Math.random() * SCREEN_WIDTH),
                     SCREEN_HEIGHT,
                     0,
-                    (float)(Math.random() / 2 * DROP_SPEED + DROP_SPEED),
-                    (int)(Math.random() * 6)
+                    (float)(Math.random() / 2 * dropSpeed + dropSpeed),
+                    nextDrop
                     )
             );
         }
@@ -162,7 +185,57 @@ public class SberGame extends ApplicationAdapter {
             case 5: currentHolder = yellowHolder; break;
         }
 
-        currentHolder.addCoin();
+        if (currentHolder.addCoin() == -1){
+            winPointGot(currentHolder.getType());
+        }
+    }
+
+    private void winPointGot(int type){
+        int points = promHolder.addPoint();
+
+        if (points == 16){
+            winGame();
+        }
+
+        if (points > timeHolder.getPointsCount()) {
+            clockTime -= 1 ;
+        } else {
+            clockTime += 2;
+        }
+
+        if (points%4 == 0){
+            difficulty++;
+            dropSpeed = DROP_SPEED_DEFAULT * (1 + (difficulty - 3)* 0.2f);
+        } else {
+            dropSpeed *= 1.1f;
+            dropPeriod = DROP_PREIOD_DEFAULT/(-dropSpeed/100);
+        }
+    }
+
+    private void timePointGot(){
+        int timePoints = timeHolder.addPoint();
+
+        if (timeHolder.getPointsCount() > promHolder.getPointsCount()) {
+            clockTime += 1;
+        }
+
+        if (timePoints == 12){
+            hero.wearHat();
+        }
+
+        if (timePoints == 16){
+            looseGame();
+        }
+
+
+    }
+
+    private void looseGame(){
+
+    }
+
+    private void winGame(){
+
     }
 
     private boolean isKeyPressed() {

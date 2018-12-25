@@ -80,6 +80,11 @@ public class SberGame extends ApplicationAdapter {
 
         this.state = state;
 
+        difficulty = 3;
+        dropSpeed = DROP_SPEED_DEFAULT;
+        dropPeriod = DROP_PREIOD_DEFAULT;
+        clockTime = CLOCK_POINT_SECONDS_DEFAULT;
+
         engine.removeAllEntities();
         switch (state){
             case START:{
@@ -189,17 +194,11 @@ public class SberGame extends ApplicationAdapter {
 
                     switch (getKeyPressed()) {
                         case Input.Keys.LEFT: {
-                            heroPosition.setX(heroPosition.getX() - Hero.SPEED * dt);
-                            if (heroPosition.getX() < 40) {
-                                heroPosition.setX(40);
-                            }
+                            moveHeroLeft(dt, heroPosition);
                             break;
                         }
                         case Input.Keys.RIGHT: {
-                            heroPosition.setX(heroPosition.getX() + Hero.SPEED * dt);
-                            if (heroPosition.getX() > SCREEN_WIDTH - 40) {
-                                heroPosition.setX(SCREEN_WIDTH - 40);
-                            }
+                            moveHeroRight(dt, heroPosition);
                             break;
                         }
 
@@ -207,6 +206,9 @@ public class SberGame extends ApplicationAdapter {
                         }
                     }
                 }
+
+                inputHandler(dt);
+
                 break;
             }
             case WIN:
@@ -219,6 +221,20 @@ public class SberGame extends ApplicationAdapter {
             }
         }
 
+    }
+
+    private void moveHeroRight(float dt, PositionComponent heroPosition) {
+        heroPosition.setX(heroPosition.getX() + Hero.SPEED * dt);
+        if (heroPosition.getX() > SCREEN_WIDTH - 40) {
+            heroPosition.setX(SCREEN_WIDTH - 40);
+        }
+    }
+
+    private void moveHeroLeft(float dt, PositionComponent heroPosition) {
+        heroPosition.setX(heroPosition.getX() - Hero.SPEED * dt);
+        if (heroPosition.getX() < 40) {
+            heroPosition.setX(40);
+        }
     }
 
     @Override
@@ -319,5 +335,21 @@ public class SberGame extends ApplicationAdapter {
         return -2;
     }
 
+
+
+    private void inputHandler(float dt) {
+
+        if (Gdx.input.isTouched()) {
+            int x = Gdx.input.getX();
+            PositionComponent heroPosition =  Mappers.positionMapper.get(hero);
+            if (Math.abs(x - heroPosition.getX()) > 10){
+               if (x < heroPosition.getX()) {
+                   moveHeroLeft(dt, heroPosition);
+               } else{
+                   moveHeroRight(dt, heroPosition);
+               }
+            }
+        }
+    }
 
 }

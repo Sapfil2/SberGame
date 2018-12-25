@@ -13,7 +13,7 @@ buildscript {
         google()
     }
     dependencies {
-//        classpath 'org.wisepersist:gwt-gradle-plugin:1.0.6'
+        classpath 'org.wisepersist:gwt-gradle-plugin:1.0.6'
         classpath 'com.android.tools.build:gradle:3.2.1'
         classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.3'
         classpath 'com.google.gms:google-services:4.0.1'
@@ -80,6 +80,7 @@ project(":android") {
 
         compile "com.badlogicgames.ashley:ashley:1.7.0"
 
+
         implementation 'com.google.firebase:firebase-core:16.0.1'
         
     }
@@ -87,23 +88,23 @@ project(":android") {
     apply plugin: 'com.google.gms.google-services'
 }
 
-//project(":html") {
-//    apply plugin: "gwt"
-//    apply plugin: "war"
-//
-//
-//    dependencies {
-//        compile project(":core")
-//        compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion"
-//        compile "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
-//        compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
-//        compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion:sources"
-//        compile "com.badlogicgames.gdx:gdx-box2d-gwt:$gdxVersion:sources"
-//
-//        compile "com.badlogicgames.ashley:ashley:1.7.0:sources"
-//
-//    }
-//}
+project(":html") {
+    apply plugin: "gwt"
+    apply plugin: "war"
+
+
+    dependencies {
+        compile project(":core")
+        compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion"
+        compile "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
+        compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
+        compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion:sources"
+        compile "com.badlogicgames.gdx:gdx-box2d-gwt:$gdxVersion:sources"
+
+        compile "com.badlogicgames.ashley:ashley:1.7.0:sources"
+
+    }
+}
 
 project(":core") {
     apply plugin: "java"

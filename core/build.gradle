@@ -10,3 +10,9 @@ sourceSets.main.java.srcDirs = [ "src/" ]
 eclipse.project {
     name = appName + "-core"
 }
+
+dependencies{
+    implementation 'com.google.firebase:firebase-core:16.0.1'
+}
+
+apply plugin: 'com.google.gms.google-services'

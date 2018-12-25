@@ -7,7 +7,10 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.sapfil.sbergame.ashley.components.BackComponent;
 import com.sapfil.sbergame.ashley.components.drops.DropComponent;
 import com.sapfil.sbergame.ashley.components.GfxComponent;
@@ -21,10 +24,13 @@ import com.sapfil.sbergame.screens.Screen;
 
 public class SberGame extends ApplicationAdapter {
 
-    private enum State{
+    private enum State {
         START, GAME, LOSE, WIN
     }
 
+    private Vector3 mouse = new Vector3();
+
+    private OrthographicCamera camera;
     public static Engine engine;
 
     public static final float DROP_PREIOD_DEFAULT = 0.5f;
@@ -53,7 +59,7 @@ public class SberGame extends ApplicationAdapter {
 
     float dropCounter = 0.0f, timeCounter = 0.0f;
 
-    int[] levelMap = {0,4,2,5,3,1,0};
+    int[] levelMap = {0, 4, 2, 5, 3, 1, 0};
     int difficulty = 3;
     float dropSpeed = DROP_SPEED_DEFAULT;
     float dropPeriod = DROP_PREIOD_DEFAULT;
@@ -67,16 +73,22 @@ public class SberGame extends ApplicationAdapter {
 
     @Override
     public void create() {
-            engine = new Engine();
-            batch = new SpriteBatch();
+        engine = new Engine();
+        batch = new SpriteBatch();
 
-            startScreen = new Screen("Start-screen.png");
-            winScreen = new Screen("win-screen.png");
-            loseScreen = new Screen("lose-screen.jpg");
-            initState(State.START);
+        startScreen = new Screen("Start-screen.png");
+        winScreen = new Screen("win-screen.png");
+        loseScreen = new Screen("lose-screen.jpg");
+
+        this.camera = new OrthographicCamera();
+        camera.setToOrtho(false, 640, 480);
+        camera.translate(320, 240);
+
+
+        initState(State.START);
     }
 
-    private void initState(State state){
+    private void initState(State state) {
 
         this.state = state;
 
@@ -86,8 +98,8 @@ public class SberGame extends ApplicationAdapter {
         clockTime = CLOCK_POINT_SECONDS_DEFAULT;
 
         engine.removeAllEntities();
-        switch (state){
-            case START:{
+        switch (state) {
+            case START: {
                 engine.addEntity(startScreen);
                 break;
             }
@@ -109,11 +121,11 @@ public class SberGame extends ApplicationAdapter {
                 engine.addEntity(hero);
                 break;
             }
-            case LOSE:{
+            case LOSE: {
                 engine.addEntity(loseScreen);
                 break;
             }
-            case WIN:{
+            case WIN: {
                 engine.addEntity(winScreen);
                 break;
             }
@@ -123,6 +135,9 @@ public class SberGame extends ApplicationAdapter {
 
     @Override
     public void render() {
+
+//        camera.update();
+        batch.setProjectionMatrix(camera.combined);
 
         this.update(Gdx.graphics.getDeltaTime());
 
@@ -213,8 +228,8 @@ public class SberGame extends ApplicationAdapter {
             }
             case WIN:
             case LOSE:
-            case START:{
-                if (Gdx.input.isKeyPressed(Input.Keys.ENTER)){
+            case START: {
+                if (Gdx.input.isKeyPressed(Input.Keys.ENTER) || Gdx.input.justTouched()) {
                     initState(State.GAME);
                 }
                 break;
@@ -242,71 +257,83 @@ public class SberGame extends ApplicationAdapter {
         batch.dispose();
     }
 
-    private void updateDevOpsIcon(int type){
+    private void updateDevOpsIcon(int type) {
 
-        if (currentHolder.getType() != type){
+        if (currentHolder.getType() != type) {
             currentHolder.cancel();
         }
 
-        switch (type){
-            case 0: currentHolder = redHolder; break;
-            case 1: currentHolder = purpleHolder; break;
-            case 2: currentHolder = cyanHolder; break;
-            case 3: currentHolder = blueHolder; break;
-            case 4: currentHolder = greenHolder; break;
-            case 5: currentHolder = yellowHolder; break;
+        switch (type) {
+            case 0:
+                currentHolder = redHolder;
+                break;
+            case 1:
+                currentHolder = purpleHolder;
+                break;
+            case 2:
+                currentHolder = cyanHolder;
+                break;
+            case 3:
+                currentHolder = blueHolder;
+                break;
+            case 4:
+                currentHolder = greenHolder;
+                break;
+            case 5:
+                currentHolder = yellowHolder;
+                break;
         }
 
-        if (currentHolder.addCoin() == -1){
+        if (currentHolder.addCoin() == -1) {
             winPointGot(currentHolder.getType());
         }
     }
 
-    private void winPointGot(int type){
+    private void winPointGot(int type) {
         int points = promHolder.addPoint();
 
-        if (points == 16){
+        if (points == 16) {
             winGame();
         }
 
         if (points > timeHolder.getPointsCount()) {
-            clockTime -= 1 ;
+            clockTime -= 1;
         } else {
             clockTime += 2;
         }
 
-        if (points%4 == 0){
+        if (points % 4 == 0) {
             difficulty++;
-            dropSpeed = DROP_SPEED_DEFAULT * (1 + (difficulty - 3)* 0.2f);
+            dropSpeed = DROP_SPEED_DEFAULT * (1 + (difficulty - 3) * 0.2f);
         } else {
             dropSpeed *= 1.1f;
-            dropPeriod = DROP_PREIOD_DEFAULT/(-dropSpeed/100);
+            dropPeriod = DROP_PREIOD_DEFAULT / (-dropSpeed / 100);
         }
     }
 
-    private void timePointGot(){
+    private void timePointGot() {
         int timePoints = timeHolder.addPoint();
 
         if (timeHolder.getPointsCount() > promHolder.getPointsCount()) {
             clockTime += 1;
         }
 
-        if (timePoints == 12){
+        if (timePoints == 12) {
             hero.wearHat();
         }
 
-        if (timePoints == 16){
+        if (timePoints == 16) {
             looseGame();
         }
 
 
     }
 
-    private void looseGame(){
+    private void looseGame() {
         initState(State.LOSE);
     }
 
-    private void winGame(){
+    private void winGame() {
         initState(State.WIN);
     }
 
@@ -336,18 +363,21 @@ public class SberGame extends ApplicationAdapter {
     }
 
 
-
     private void inputHandler(float dt) {
 
         if (Gdx.input.isTouched()) {
-            int x = Gdx.input.getX();
-            PositionComponent heroPosition =  Mappers.positionMapper.get(hero);
-            if (Math.abs(x - heroPosition.getX()) > 10){
-               if (x < heroPosition.getX()) {
-                   moveHeroLeft(dt, heroPosition);
-               } else{
-                   moveHeroRight(dt, heroPosition);
-               }
+
+            mouse.x = Gdx.input.getX();
+            mouse.y = Gdx.input.getY();
+            camera.unproject(mouse);
+
+            PositionComponent heroPosition = Mappers.positionMapper.get(hero);
+            if (Math.abs(mouse.x - heroPosition.getX()) > 10) {
+                if (mouse.x < heroPosition.getX()) {
+                    moveHeroLeft(dt, heroPosition);
+                } else {
+                    moveHeroRight(dt, heroPosition);
+                }
             }
         }
     }
